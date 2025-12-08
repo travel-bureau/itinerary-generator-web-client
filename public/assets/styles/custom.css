@@ -1,0 +1,58 @@
+@import url("https://fonts.googleapis.com/css2?family=Acme&display=swap");
+
+.theme-overlay-light {
+  background: linear-gradient(
+    hsl(var(--secondary) / 0.2),
+    hsl(var(--secondary) / 0.85)
+  );
+  mix-blend-mode: overlay;
+}
+
+.theme-overlay-dark {
+  background: linear-gradient(
+    hsl(var(--secondary) / 0.4),
+    hsl(var(--secondary) / 0.6)
+  );
+  mix-blend-mode: overlay;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  margin: 0;
+  padding: 0;
+}
+
+.theme-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.acme-regular {
+  font-family: "Acme", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.nav-adjust {
+  padding-top: 100px; /* Adjust to match the height of your navbar */
+  margin-top: -100px; /* Adjust to match the height of your navbar */
+}
+
+.heading-line {
+  line-height: 1.5;
+}
+
+@keyframes progressFill {
+  0% { background-size: 0% 100%; }
+  100% { background-size: 100% 100%; }
+}
