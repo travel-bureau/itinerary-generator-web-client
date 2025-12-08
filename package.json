@@ -1,5 +1,5 @@
 {
-  "name": "lovelytrails-itinerary-generator-web-client",
+  "name": "itinerary-generator-web-client",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
