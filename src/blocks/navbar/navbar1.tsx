@@ -62,8 +62,8 @@ interface Navbar1Props {
 
 const Navbar1 = ({
   logo = {
-    url: "https://www.lovelytrails.com",
-    src: "/assets/images/logo-black.png",
+    url: "#",
+    src: "/assets/images/logo.svg",
     alt: "logo",
     title: "",
   },
@@ -76,8 +76,8 @@ const Navbar1 = ({
   const { theme, resolvedTheme } = useTheme();
   const logoSrc =
     resolvedTheme === "dark"
-      ? "/assets/images/logo-white.png"
-      : "/assets/images/logo-black.png";
+      ? "/assets/images/logo.svg"
+      : "/assets/images/logo.svg";
   return (
     <section className="bg-muted">
       <div className="container-fluid p-0">

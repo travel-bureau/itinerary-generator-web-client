@@ -804,11 +804,11 @@ const Contact17 = () => {
 
                     <p className="text-muted-foreground text-xs sm:col-span-2">
                       You acknowledge that you've reviewed and agreed to our{" "}
-                      <a href="https://www.lovelytrails.com/privacy.php" target="_blank" className="text-primary hover:underline">
+                      <a href="#" className="text-primary hover:underline">
                         Privacy Policy
                       </a>{" "}
                       and{" "}
-                      <a href="https://www.lovelytrails.com/tnc.php" target="_blank" className="text-primary hover:underline">
+                      <a href="#" className="text-primary hover:underline">
                         Terms of Service
                       </a>
                     </p>
