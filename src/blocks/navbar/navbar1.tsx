@@ -63,7 +63,7 @@ interface Navbar1Props {
 const Navbar1 = ({
   logo = {
     url: "#",
-    src: "/assets/images/logo.svg",
+    src: "/assets/images/logo-dark.png",
     alt: "logo",
     title: "",
   },
@@ -76,8 +76,8 @@ const Navbar1 = ({
   const { theme, resolvedTheme } = useTheme();
   const logoSrc =
     resolvedTheme === "dark"
-      ? "/assets/images/logo.svg"
-      : "/assets/images/logo.svg";
+      ? "/assets/images/logo-light.png"
+      : "/assets/images/logo-dark.png";
   return (
     <section className="bg-muted">
       <div className="container-fluid p-0">
