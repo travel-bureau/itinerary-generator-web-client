@@ -61,10 +61,10 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
 // wake both, but only return serverRes
 async function wakeApisAndFetch(payload: any) {
   const [gatewayRes, serverRes] = await Promise.all([
-    fetchWithRetry(serverUrl, "").catch(err =>
+    fetchWithRetry(serverUrl, {}).catch(err =>
       console.warn("Server wake failed:", err)
     ),
-    fetchWithRetry(gatewayUrl, "").catch(err =>
+    fetchWithRetry(gatewayUrl, {}).catch(err =>
       console.warn("Gateway wake failed:", err)
     ),
   ]);
