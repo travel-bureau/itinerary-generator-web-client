@@ -59,15 +59,23 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
 }
 
 // wake both, but only return serverRes
-async function wakeApis(payload: any) {
+async function wakeApisAndFetch(payload: any) {
   const [gatewayRes, serverRes] = await Promise.all([
+    fetchWithRetry(serverUrl, "").catch(err =>
+      console.warn("Server wake failed:", err)
+    ),
+    fetchWithRetry(gatewayUrl, "").catch(err =>
+      console.warn("Gateway wake failed:", err)
+    ),
+  ]);
+
+  const [gatewayResWithPayload] = await Promise.all([
     fetchWithRetry(gatewayUrl, payload).catch(err =>
       console.warn("Gateway wake failed:", err)
     ),
-    fetchWithRetry(serverUrl, payload),
   ]);
 
-  return serverRes; // only return the server response
+  return gatewayResWithPayload; // only return the gateway response
 }
 
 function calculateTripDays(fromDate: Date, toDate: Date): number {
@@ -194,7 +202,7 @@ const Contact17 = () => {
     };
 
     try {
-      const response = await wakeApis(payload);
+      const response = await wakeApisAndFetch(payload);
 
       if (!response.ok) {
         const errorText = await response.text(); // fallback for non-JSON errors
