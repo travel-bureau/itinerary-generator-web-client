@@ -31,7 +31,7 @@ const serverUrl  = import.meta.env.PUBLIC_API_SERVER_URL;
 const videoURL = import.meta.env.PUBLIC_API_VIDEO_URL;
 
 async function fetchWithRetry(url: string, payload: any, retries = 5) {
-  const isDev = import.meta.env.NODE_ENV === 'development';
+  const isDev = process.env.NODE_ENV === 'development';
 
   for (let i = 0; i < retries; i++) {
     try {
@@ -41,39 +41,31 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
         body: JSON.stringify(payload),
       });
 
-      // Parse JSON safely
+      // Parse JSON only if you need to check wake‑up error
       let data: any = null;
       try {
-        data = await res.json();
-      } catch {
-        /* ignore parse errors */
-      }
+        data = await res.clone().json(); // use clone() so body isn’t consumed
+      } catch { /* ignore */ }
 
-      // Case 1: normal success
       if (res.ok) {
-        return data ?? res;
+        return res; // return raw Response
       }
 
-      // Case 2: wake-up probe with {} → 400 + known error message
       if (
         res.status === 400 &&
         data?.errors?.[0]?.message?.includes('POST body missing')
       ) {
-        // Treat this as "server awake"
-        return data;
+        // Treat this as "awake"
+        isDev && console.log(`${url} is awake!`);
+        return res;
       }
 
-      // Otherwise log and retry
       if (isDev) {
-        console.warn(
-          `🔁 Retry ${i + 1}/${retries} — status: ${res.status} (${url})`
-        );
+        console.warn(`🔁 Retry ${i + 1}/${retries} — status: ${res.status} (${url})`);
       }
     } catch (err: any) {
       if (isDev) {
-        console.warn(
-          `⚠️ Retry ${i + 1}/${retries} — network error: ${err.message} (${url})`
-        );
+        console.warn(`⚠️ Retry ${i + 1}/${retries} — network error: ${err.message} (${url})`);
       }
     }
 
@@ -83,10 +75,10 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
   throw new Error(`GraphQL endpoint failed after retries: ${url}`);
 }
 
-
-// wake both, but only return serverRes
+// Wake both, then send payload only to server and return serverRes
 async function wakeApisAndFetch(payload: any) {
-  const [gatewayRes, serverRes] = await Promise.all([
+  // Wake both with empty body
+  await Promise.all([
     fetchWithRetry(serverUrl, {}).catch(err =>
       console.warn("Server wake failed:", err)
     ),
@@ -95,13 +87,10 @@ async function wakeApisAndFetch(payload: any) {
     ),
   ]);
 
-  const [gatewayResWithPayload] = await Promise.all([
-    fetchWithRetry(gatewayUrl, payload).catch(err =>
-      console.warn("Gateway wake failed:", err)
-    ),
-  ]);
+  // Now send actual payload only to server
+  const serverRes = await fetchWithRetry(gatewayUrl, payload);
 
-  return gatewayResWithPayload; // only return the gateway response
+  return serverRes; // only return server response
 }
 
 function calculateTripDays(fromDate: Date, toDate: Date): number {
