@@ -41,14 +41,39 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
         body: JSON.stringify(payload),
       });
 
+      // Parse JSON safely
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        /* ignore parse errors */
+      }
+
+      // Case 1: normal success
       if (res.ok) {
-        return res;
-      } else if (isDev) {
-        console.warn(`🔁 Retry ${i + 1}/${retries} — status: ${res.status} (${url})`);
+        return data ?? res;
+      }
+
+      // Case 2: wake-up probe with {} → 400 + known error message
+      if (
+        res.status === 400 &&
+        data?.errors?.[0]?.message?.includes('POST body missing')
+      ) {
+        // Treat this as "server awake"
+        return data;
+      }
+
+      // Otherwise log and retry
+      if (isDev) {
+        console.warn(
+          `🔁 Retry ${i + 1}/${retries} — status: ${res.status} (${url})`
+        );
       }
     } catch (err: any) {
       if (isDev) {
-        console.warn(`⚠️ Retry ${i + 1}/${retries} — network error: ${err.message} (${url})`);
+        console.warn(
+          `⚠️ Retry ${i + 1}/${retries} — network error: ${err.message} (${url})`
+        );
       }
     }
 
@@ -57,6 +82,7 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
 
   throw new Error(`GraphQL endpoint failed after retries: ${url}`);
 }
+
 
 // wake both, but only return serverRes
 async function wakeApisAndFetch(payload: any) {
