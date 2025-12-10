@@ -26,35 +26,48 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import VideoPlayer from "@/custom/VideoPlayer";
 
-const apiUrl = import.meta.env.PUBLIC_API_URL;
-const videoURL = "https://storage.googleapis.com/itinerary-generator-videos/itinerary_generator.webm";
+const gatewayUrl = import.meta.env.PUBLIC_API_GATEWAY_URL;
+const serverUrl  = import.meta.env.PUBLIC_API_SERVER_URL;
+const videoURL = import.meta.env.VIDEO_URL;
 
-async function fetchWithRetry(payload, retries = 5) {
+async function fetchWithRetry(url: string, payload: any, retries = 5) {
   const isDev = import.meta.env.NODE_ENV === 'development';
 
   for (let i = 0; i < retries; i++) {
     try {
-      const res = await fetch(`${apiUrl}/graphql`, {
+      const res = await fetch(`${url}/graphql`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        return await res;
+        return res;
       } else if (isDev) {
-        console.warn(`🔁 Retry ${i + 1}/${retries} — status: ${res.status}`);
+        console.warn(`🔁 Retry ${i + 1}/${retries} — status: ${res.status} (${url})`);
       }
-    } catch (err) {
+    } catch (err: any) {
       if (isDev) {
-        console.warn(`⚠️ Retry ${i + 1}/${retries} — network error: ${err.message}`);
+        console.warn(`⚠️ Retry ${i + 1}/${retries} — network error: ${err.message} (${url})`);
       }
     }
 
     await new Promise((r) => setTimeout(r, 5000 * (i + 1)));
   }
 
-  throw new Error('GraphQL endpoint failed after retries');
+  throw new Error(`GraphQL endpoint failed after retries: ${url}`);
+}
+
+// wake both, but only return serverRes
+export async function wakeApis(payload: any) {
+  const [gatewayRes, serverRes] = await Promise.all([
+    fetchWithRetry(gatewayUrl, payload).catch(err =>
+      console.warn("Gateway wake failed:", err)
+    ),
+    fetchWithRetry(serverUrl, payload),
+  ]);
+
+  return serverRes; // only return the server response
 }
 
 function calculateTripDays(fromDate: Date, toDate: Date): number {
@@ -181,7 +194,7 @@ const Contact17 = () => {
     };
 
     try {
-      const response = await fetchWithRetry(payload);
+      const response = await wakeApis(payload);
 
       if (!response.ok) {
         const errorText = await response.text(); // fallback for non-JSON errors
