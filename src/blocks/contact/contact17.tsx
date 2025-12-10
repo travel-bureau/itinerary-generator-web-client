@@ -99,6 +99,21 @@ function calculateTripDays(fromDate: Date, toDate: Date): number {
   return Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1);
 }
 
+// Generate timestamped filename in frontend
+function generatePdfFileName() {
+  const now = new Date();
+  const formatted =
+    now.getFullYear().toString() +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    String(now.getDate()).padStart(2, "0") +
+    "_" + 
+    String(now.getHours()).padStart(2, "0") +
+    String(now.getMinutes()).padStart(2, "0") +
+    String(now.getSeconds()).padStart(2, "0");
+
+  return `Itinerary_${formatted}.pdf`;
+}
+
 const Contact17 = () => {
   const form = useForm({
     defaultValues: {
@@ -280,7 +295,7 @@ const Contact17 = () => {
       const url = window.URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = "itinerary.pdf";
+      anchor.download = generatePdfFileName();
       anchor.style.display = "none";
       document.body.appendChild(anchor);
       anchor.click();
