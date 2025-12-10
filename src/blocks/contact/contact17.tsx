@@ -77,20 +77,20 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
 
 // Wake both, then send payload only to server and return serverRes
 async function wakeApisAndFetch(payload: any) {
-  // Wake both with empty body
-  await Promise.all([
-    fetchWithRetry(serverUrl, {}).catch(err =>
-      console.warn("Server wake failed:", err)
-    ),
-    fetchWithRetry(gatewayUrl, {}).catch(err =>
-      console.warn("Gateway wake failed:", err)
-    ),
-  ]);
+  // Step 1: wake server first
+  await fetchWithRetry(serverUrl, {}).catch(err =>
+    console.warn("Server wake failed:", err)
+  );
 
-  // Now send actual payload only to server
-  const serverRes = await fetchWithRetry(gatewayUrl, payload);
+  // Step 2: once server is awake, wake gateway
+  await fetchWithRetry(gatewayUrl, {}).catch(err =>
+    console.warn("Gateway wake failed:", err)
+  );
 
-  return serverRes; // only return server response
+  // Step 3: send actual payload only to server
+  const serverRes = await fetchWithRetry(serverUrl, payload);
+
+  return serverRes; // only return the server response
 }
 
 function calculateTripDays(fromDate: Date, toDate: Date): number {
