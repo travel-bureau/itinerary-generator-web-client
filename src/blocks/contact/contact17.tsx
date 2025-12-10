@@ -28,7 +28,7 @@ import VideoPlayer from "@/custom/VideoPlayer";
 
 const gatewayUrl = import.meta.env.PUBLIC_API_GATEWAY_URL;
 const serverUrl  = import.meta.env.PUBLIC_API_SERVER_URL;
-const videoURL = import.meta.env.VIDEO_URL;
+const videoURL = import.meta.env.PUBLIC_API_VIDEO_URL;
 
 async function fetchWithRetry(url: string, payload: any, retries = 5) {
   const isDev = import.meta.env.NODE_ENV === 'development';
@@ -59,7 +59,7 @@ async function fetchWithRetry(url: string, payload: any, retries = 5) {
 }
 
 // wake both, but only return serverRes
-export async function wakeApis(payload: any) {
+async function wakeApis(payload: any) {
   const [gatewayRes, serverRes] = await Promise.all([
     fetchWithRetry(gatewayUrl, payload).catch(err =>
       console.warn("Gateway wake failed:", err)
